@@ -25,5 +25,7 @@ public class WolfAI : MonoBehaviour {
 
 		float angle = Mathf.Atan2(this.RB.velocity.y, this.RB.velocity.x) * Mathf.Rad2Deg;
 		this.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+
+		Time.timeScale = 1 - Input.GetAxis ("Fire");
 	}
 }
