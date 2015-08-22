@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class FollowCam : MonoBehaviour {
 
-	public GameObject target;
+	[HideInInspector]
+	public List<GameObject> targets;
+
 	public float smooth = 5f;
 
 	float mapWidth = 28f;
@@ -27,12 +30,19 @@ public class FollowCam : MonoBehaviour {
 
 	void LateUpdate ()
 	{
-		Vector3 targetPos = target.transform.position;
-		targetPos.z = this.transform.position.z;
-		Vector3 destPos = Vector3.Lerp (this.transform.position, targetPos, Time.deltaTime * smooth);
-		destPos.x = Mathf.Clamp(destPos.x, minX, maxX);
-		destPos.y = Mathf.Clamp(destPos.y, minY, maxY);
-		this.transform.position = destPos;
+		if (targets == null || targets.Count == 0)	return;
+
+		Vector3 targetPos = Vector3.zero;
+		foreach (GameObject t in targets) {
+			targetPos += t.transform.position;
+		}
+		targetPos = targetPos / targets.Count;
+
+		targetPos.z = transform.position.z;
+		Vector3 destPos = Vector3.Lerp (transform.position, targetPos, Time.deltaTime * smooth);
+		//destPos.x = Mathf.Clamp(destPos.x, minX, maxX);
+		//destPos.y = Mathf.Clamp(destPos.y, minY, maxY);
+		transform.position = destPos;
 
 	}
 }
