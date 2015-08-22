@@ -4,19 +4,31 @@ using System.Collections.Generic;
 
 public class PreyAI : MonoBehaviour {
 
-	public GameObject wolf;
+	GameObject wolf;
 	Rigidbody2D wolfRB;
 
 	Rigidbody2D RB;
 
 	float maxSpeed = 3.5f;
 
+	[HideInInspector]
+	public bool isInvincible = false;
+
 	// Use this for initialization
 	void Start ()
 	{
+		wolf = GameObject.FindGameObjectWithTag ("Wolf");
 		wolfRB = wolf.GetComponent<Rigidbody2D>();
 
 		this.RB = this.GetComponent<Rigidbody2D>();
+
+		//Debug.Log ("Start PreyAI" + this.gameObject.name);
+	}
+
+	public void setWolf (GameObject go)
+	{
+		wolf = go;
+		wolfRB = wolf.GetComponent<Rigidbody2D>();
 	}
 	
 	// Update is called once per frame
@@ -43,6 +55,16 @@ public class PreyAI : MonoBehaviour {
 		vel.Normalize ();
 		vel *= this.maxSpeed;
 		return vel - this.RB.velocity;
+	}
+
+	public void StartInvincibility ()
+	{
+		isInvincible = true;
+		Invoke ("EndInvincibility", 3f);
+	}
+	void EndInvincibility ()
+	{
+		isInvincible = false;
 	}
 	
 }

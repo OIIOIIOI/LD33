@@ -12,6 +12,8 @@ public class WolfAI : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		RB = this.GetComponent<Rigidbody2D>();
+
+		//Debug.Log ("Start WolfAI " + this.gameObject.name);
 	}
 	
 	// Update is called once per frame
@@ -26,6 +28,9 @@ public class WolfAI : MonoBehaviour {
 
 		foreach (GameObject p in preys)
 		{
+			PreyAI ai = p.GetComponent<PreyAI>();
+			if (ai.isInvincible)	continue;
+
 			// Get dir for raycast
 			Vector2 dir = p.transform.position - this.transform.position;
 			// Get all colliders on the way
@@ -90,6 +95,28 @@ public class WolfAI : MonoBehaviour {
 		vel.Normalize ();
 		vel *= this.maxSpeed;
 		return vel - this.RB.velocity;
+	}
+	
+	void OnCollisionEnter2D (Collision2D coll)
+	{
+		if (coll.collider.tag == "Prey")
+		{
+			PreyAI pAI = coll.collider.gameObject.GetComponent<PreyAI>();
+			if (pAI.isInvincible)	return;
+
+			// Prey becomes Wolf
+			CommonAI cAI = coll.collider.gameObject.GetComponent<CommonAI>();
+			if (cAI != null)	cAI.BecomeWolf();
+			// Wolf becomes Prey
+			cAI = this.gameObject.GetComponent<CommonAI>();
+			if (cAI != null)	cAI.BecomePrey();
+			// Update Wolf reference
+			foreach (GameObject p in GameObject.FindGameObjectsWithTag("Prey"))
+			{
+				pAI = p.GetComponent<PreyAI>();
+				pAI.setWolf(coll.collider.gameObject);
+			}
+		}
 	}
 
 }
