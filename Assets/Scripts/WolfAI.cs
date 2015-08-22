@@ -26,9 +26,11 @@ public class WolfAI : MonoBehaviour {
 		float shortestDist = float.MaxValue;
 		GameObject closestPrey = preys [0];
 
+		bool currentIsHidden = false;
+		
 		foreach (GameObject p in preys)
 		{
-			PreyAI ai = p.GetComponent<PreyAI>();
+			CommonAI ai = p.GetComponent<CommonAI>();
 			if (ai.isInvincible)	continue;
 
 			// Get dir for raycast
@@ -48,7 +50,10 @@ public class WolfAI : MonoBehaviour {
 				}
 			}
 			// Hit a wall, ignore prey
-			if (hitWall)	continue;
+			if (hitWall) {
+				if (p == currentPrey)	currentIsHidden = true;
+				continue;
+			}
 			// Didn't hit a wall, check if prey is closer
 			float dist = Vector2.Distance(this.transform.position, p.transform.position);
 			if (dist < shortestDist) {
@@ -57,7 +62,7 @@ public class WolfAI : MonoBehaviour {
 			}
 		}
 		// First time assign
-		if (currentPrey == null) {
+		if (currentPrey == null || currentIsHidden) {
 			currentPrey = closestPrey;
 		}
 		// Keep current if distance difference is not so big
@@ -95,28 +100,6 @@ public class WolfAI : MonoBehaviour {
 		vel.Normalize ();
 		vel *= this.maxSpeed;
 		return vel - this.RB.velocity;
-	}
-	
-	void OnCollisionEnter2D (Collision2D coll)
-	{
-		if (coll.collider.tag == "Prey")
-		{
-			PreyAI pAI = coll.collider.gameObject.GetComponent<PreyAI>();
-			if (pAI.isInvincible)	return;
-
-			// Prey becomes Wolf
-			CommonAI cAI = coll.collider.gameObject.GetComponent<CommonAI>();
-			if (cAI != null)	cAI.BecomeWolf();
-			// Wolf becomes Prey
-			cAI = this.gameObject.GetComponent<CommonAI>();
-			if (cAI != null)	cAI.BecomePrey();
-			// Update Wolf reference
-			foreach (GameObject p in GameObject.FindGameObjectsWithTag("Prey"))
-			{
-				pAI = p.GetComponent<PreyAI>();
-				pAI.setWolf(coll.collider.gameObject);
-			}
-		}
 	}
 
 }

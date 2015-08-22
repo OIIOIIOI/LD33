@@ -11,9 +11,6 @@ public class PreyAI : MonoBehaviour {
 
 	float maxSpeed = 3.5f;
 
-	[HideInInspector]
-	public bool isInvincible = false;
-
 	// Use this for initialization
 	void Start ()
 	{
@@ -55,16 +52,6 @@ public class PreyAI : MonoBehaviour {
 		vel.Normalize ();
 		vel *= this.maxSpeed;
 		return vel - this.RB.velocity;
-	}
-
-	public void StartInvincibility ()
-	{
-		isInvincible = true;
-		Invoke ("EndInvincibility", 3f);
-	}
-	void EndInvincibility ()
-	{
-		isInvincible = false;
 	}
 	
 }

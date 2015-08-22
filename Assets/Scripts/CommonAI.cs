@@ -3,13 +3,10 @@ using System.Collections;
 
 public class CommonAI : MonoBehaviour {
 
-	public Sprite wolfSprite;
-	public Sprite preySprite;
+	[HideInInspector]
+	public bool isInvincible = false;
 
-	// Use this for initialization
-	void Start () {
-
-	}
+	GameObject halo;
 
 	public void BecomeWolf ()
 	{
@@ -18,21 +15,52 @@ public class CommonAI : MonoBehaviour {
 		{
 			Destroy(pAI);
 			this.gameObject.AddComponent<WolfAI>();
-			this.gameObject.GetComponent<SpriteRenderer>().sprite = wolfSprite;
-			this.gameObject.tag = "Wolf";
 		}
+		this.gameObject.AddComponent<WolfCommon>();
+		this.gameObject.GetComponent<SpriteRenderer>().sprite = Main.instance.wolfSprite;
+		this.gameObject.tag = "Wolf";
 	}
 
 	public void BecomePrey ()
 	{
+		WolfCommon wc = this.gameObject.GetComponent<WolfCommon>();
+		Destroy (wc);
+
 		WolfAI wAI = this.gameObject.GetComponent<WolfAI>();
 		if (wAI != null)
 		{
 			Destroy(wAI);
-			PreyAI pAI = this.gameObject.AddComponent<PreyAI>();
-			pAI.StartInvincibility();
-			this.gameObject.GetComponent<SpriteRenderer>().sprite = preySprite;
-			this.gameObject.tag = "Prey";
+			this.gameObject.AddComponent<PreyAI>();
 		}
+		foreach (CommonAI cAI in GameObject.FindObjectsOfType<CommonAI> ()) {
+			cAI.EndInvincibility();
+		}
+		StartInvincibility ();
+		this.gameObject.GetComponent<SpriteRenderer>().sprite = Main.instance.preySprite;
+		this.gameObject.tag = "Prey";
 	}
+	
+	public void StartInvincibility ()
+	{
+		halo = Instantiate (Main.instance.haloPrefab) as GameObject;
+		halo.transform.SetParent (this.transform, false);
+		isInvincible = true;
+	}
+
+	public void EndInvincibility ()
+	{
+		if (halo != null)	Destroy (halo);
+		isInvincible = false;
+	}
+
 }
+
+
+
+
+
+
+
+
+
+
