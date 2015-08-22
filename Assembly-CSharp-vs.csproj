@@ -46,8 +46,10 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\Main.cs" />
      <Compile Include="Assets\Scripts\PreyAI.cs" />
      <Compile Include="Assets\Scripts\WolfAI.cs" />
+     <Compile Include="Assets\Scripts\WolfPlayer.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
