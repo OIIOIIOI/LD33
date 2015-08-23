@@ -9,8 +9,8 @@ public class FollowCam : MonoBehaviour {
 
 	public float smooth = 5f;
 
-	float mapWidth = 28f;
-	float mapHeight = 16f;
+	float mapWidth = 16f;
+	float mapHeight = 12f;
 	
 	float minX;
 	float maxX;
@@ -40,8 +40,8 @@ public class FollowCam : MonoBehaviour {
 
 		targetPos.z = transform.position.z;
 		Vector3 destPos = Vector3.Lerp (transform.position, targetPos, Time.deltaTime * smooth);
-		//destPos.x = Mathf.Clamp(destPos.x, minX, maxX);
-		//destPos.y = Mathf.Clamp(destPos.y, minY, maxY);
+		destPos.x = Mathf.Clamp(destPos.x, minX, maxX);
+		destPos.y = Mathf.Clamp(destPos.y, minY, maxY);
 		transform.position = destPos;
 
 	}

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-//using UnityStandardAssets.ImageEffects;
+using UnityStandardAssets.ImageEffects;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -27,7 +27,7 @@ public class Main : MonoBehaviour {
 
 	void Start ()
 	{
-		CreateWalls ();
+		//CreateWalls ();
 
 		players = new List<GameObject> ();
 
@@ -43,18 +43,18 @@ public class Main : MonoBehaviour {
 		for (int i = 0; i < 10; i++)
 		{
 			Vector2 pos = Vector2.zero;
-			pos.x += Random.Range(-10f, 10f);
-			pos.y += Random.Range(-7f, 7f);
+			pos.x += Random.Range(-5f, 5f);
+			pos.y += Random.Range(-5f, 5f);
 			Instantiate (entityPrefab, pos, Quaternion.identity);
 		}
 
-		for (int i = 0; i < 20; i++)
+		/*for (int i = 0; i < 20; i++)
 		{
 			Vector2 pos = Vector2.zero;
 			pos.x += Random.Range(-10f, 10f);
 			pos.y += Random.Range(-7f, 7f);
 			Instantiate (obstaclePrefab, pos, Quaternion.identity);
-		}
+		}*/
 		
 		GameObject player = Instantiate (entityPrefab, new Vector2(-7f, 0f), Quaternion.identity) as GameObject;
 		player.name = "Player1";
@@ -69,37 +69,37 @@ public class Main : MonoBehaviour {
 		hideBar = GameObject.Find ("HideBarFill").GetComponent<Image>();
 	}
 
-	void CreateWalls ()
+	/*void CreateWalls ()
 	{
 		GameObject level = GameObject.Find ("Level");
 		GameObject wall;
-		for (int x = 0; x < 12; x++)
+		for (int x = 0; x < 8; x++)
 		{
-			wall = Instantiate (wallPrefab, new Vector2(x, -8f), Quaternion.identity) as GameObject;
+			wall = Instantiate (wallPrefab, new Vector2(x, -6f), Quaternion.identity) as GameObject;
 			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(-x, -8f), Quaternion.identity) as GameObject;
+			wall = Instantiate (wallPrefab, new Vector2(-x, -6f), Quaternion.identity) as GameObject;
 			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(x, 8f), Quaternion.identity) as GameObject;
+			wall = Instantiate (wallPrefab, new Vector2(x, 6f), Quaternion.identity) as GameObject;
 			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(-x, 8f), Quaternion.identity) as GameObject;
+			wall = Instantiate (wallPrefab, new Vector2(-x, 6f), Quaternion.identity) as GameObject;
 			wall.transform.SetParent(level.transform);
 		}
-		for (int y = 0; y < 8; y++)
+		for (int y = 0; y < 6; y++)
 		{
-			wall = Instantiate (wallPrefab, new Vector2(-12, y), Quaternion.identity) as GameObject;
+			wall = Instantiate (wallPrefab, new Vector2(-8, y), Quaternion.identity) as GameObject;
 			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(-12, -y), Quaternion.identity) as GameObject;
+			wall = Instantiate (wallPrefab, new Vector2(-8, -y), Quaternion.identity) as GameObject;
 			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(12, y), Quaternion.identity) as GameObject;
+			wall = Instantiate (wallPrefab, new Vector2(8, y), Quaternion.identity) as GameObject;
 			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(12, -y), Quaternion.identity) as GameObject;
+			wall = Instantiate (wallPrefab, new Vector2(8, -y), Quaternion.identity) as GameObject;
 			wall.transform.SetParent(level.transform);
 		}
-	}
+	}*/
 	
 	void Update ()
 	{
-		Time.timeScale = 1 - Input.GetAxis ("Fire");
+		//Time.timeScale = 1 - Input.GetAxis ("Fire");
 	}
 
 	void LateUpdate ()

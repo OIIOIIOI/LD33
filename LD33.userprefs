@@ -1,10 +1,12 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Entity.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\FollowCam.cs">
     <Files>
-      <File FileName="Assets\Scripts\Entity.cs" Line="72" Column="80" />
-      <File FileName="Assets\Scripts\Main.cs" Line="63" Column="63" />
+      <File FileName="Assets\Scripts\Entity.cs" Line="127" Column="5" />
+      <File FileName="Assets\Scripts\Main.cs" Line="50" Column="3" />
       <File FileName="Assets\Scripts\RandomModel.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\ChargePoint.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\FollowCam.cs" Line="13" Column="22" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

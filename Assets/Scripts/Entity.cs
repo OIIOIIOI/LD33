@@ -39,7 +39,7 @@ public class Entity : MonoBehaviour {
 		playerNum = 1;
 		playerModel = playerNum + 10;
 
-		hideTotal = 300;
+		hideTotal = 60;
 		humanityLeft = humanityTotal = 2000;
 
 		AIModel = Random.Range (0, 2);
@@ -61,10 +61,12 @@ public class Entity : MonoBehaviour {
 
 			if (isHiding) {
 				hideLeft--;
-				if (hideLeft <= 0)
+				if (hideLeft <= 0) {
+					hideLeft = 0;
 					HideCircle ();
-				else
+				} else {
 					ShowCircle ();
+				}
 			} else {
 				HideCircle ();
 			}
@@ -122,13 +124,13 @@ public class Entity : MonoBehaviour {
 		mov.x = Input.GetAxis ("HorizontalP" + playerNum);
 		mov.y = Input.GetAxis ("VerticalP" + playerNum);
 
-		mov.Normalize ();
+		//mov.Normalize ();
 		return mov;
 	}
 	
 	bool PlayerHide ()
 	{
-		return Input.GetButton ("HideP" + playerNum);
+		return (Input.GetButton ("HideP" + playerNum) && hideLeft > 0);
 		//return false;
 	}
 
@@ -143,10 +145,85 @@ public class Entity : MonoBehaviour {
 		{
 			if (Vector2.Distance(wolf.transform.position, transform.position) < 5f)
 				mov = Evade (wolf);
+			else {
+				mov = GetClosestWayPoint ();
+			}
 		}
 
 		mov.Normalize ();
 		return mov;
+	}
+	
+	GameObject currentWaypoint;
+	GameObject previousWaypoint;
+
+	Vector2 GetClosestWayPoint ()
+	{
+		Vector2 mov = Vector2.zero;
+
+		GameObject[] preys = GameObject.FindGameObjectsWithTag ("Waypoint");
+		if (preys.Length == 0)
+			return mov;
+		
+		float shortestDist = float.MaxValue;
+		GameObject closestPrey = preys [0];
+		
+		bool currentIsHidden = false;
+
+		foreach (GameObject p in preys)
+		{
+			if (p == previousWaypoint)
+				continue;
+
+			// Get dir for raycast
+			Vector2 dir = p.transform.position - transform.position;
+			// Get all colliders on the way
+			RaycastHit2D[] hits = Physics2D.RaycastAll(transform.position, dir);
+			bool hitWall = false;
+			foreach (RaycastHit2D hit in hits) {
+				// If hit a wall, stop
+				if (hit.collider.tag == "Wall") {
+					hitWall = true;
+					break;
+				}
+				// If hit target, stop
+				else if (hit.collider.gameObject == p) {
+					break;
+				}
+			}
+			// Hit a wall, ignore prey
+			if (hitWall) {
+				if (p == currentWaypoint)	currentIsHidden = true;
+				continue;
+			}
+			// Didn't hit a wall, check if prey is closer
+			float dist = Vector2.Distance(transform.position, p.transform.position);
+			if (dist < shortestDist) {
+				shortestDist = dist;
+				closestPrey = p;
+			}
+		}
+		// First time assign or currentPrey no more available
+		if (currentWaypoint == null || currentIsHidden) {
+			currentWaypoint = closestPrey;
+		}
+
+		if (currentWaypoint != previousWaypoint)
+			mov = closestPrey.transform.position - transform.position;
+
+		mov.Normalize ();
+		return mov;
+	}
+
+	void OnTriggerEnter2D (Collider2D coll)
+	{
+		if (!isAI || coll.tag != "Waypoint")	return;
+
+		if (currentWaypoint != null && coll.gameObject == currentWaypoint) {
+			previousWaypoint = currentWaypoint;
+			currentWaypoint = null;
+		}
+
 	}
 
 	bool PreyHide ()
@@ -252,18 +329,18 @@ public class Entity : MonoBehaviour {
 	{
 		if (isWolf) {
 			if (isAI) {
-				runSpeed = 0.8f;
+				runSpeed = 0.6f;
 				moveTick = moveTickDelay = 1;
 			} else {
-				runSpeed = 0.8f;
+				runSpeed = 0.6f;
 				moveTick = moveTickDelay = 1;
 			}
 		} else {
 			if (isAI) {
-				runSpeed = 0.5f;
+				runSpeed = 0.45f;
 				moveTick = moveTickDelay = 1;
 			} else {
-				runSpeed = 0.7f;
+				runSpeed = 0.55f;
 				moveTick = moveTickDelay = 1;
 			}
 		}
@@ -321,14 +398,16 @@ public class Entity : MonoBehaviour {
 		if (!force && b == isInvincible)	return;
 		isInvincible = b;
 
-		// Remove invincibility for anyone who might have it until now
 		if (isInvincible) {
-			foreach (Entity ent in GameObject.FindObjectsOfType<Entity> ()) {
+			// Remove invincibility for anyone who might have it until now
+			/*foreach (Entity ent in GameObject.FindObjectsOfType<Entity> ()) {
 				if (ent != this)	ent.SetIsInvincible (false);
-			}
+			}*/
 			// Add halo
 			halo = Instantiate(haloPrefab) as GameObject;
 			halo.transform.SetParent (transform, false);
+			// Start timer
+			Invoke ("LooseInvincibility", 3f);
 		} else {
 			// Remove halo
 			if (halo != null)	Destroy (halo);
@@ -336,6 +415,11 @@ public class Entity : MonoBehaviour {
 	}
 
 	public bool IsInvincible () { return isInvincible; }
+
+	void LooseInvincibility ()
+	{
+		SetIsInvincible (false);
+	}
 	
 	public void SetIsHiding (bool b, bool force = false)
 	{
@@ -395,6 +479,15 @@ public class Entity : MonoBehaviour {
 	{
 		if (hideCircle != null)	Destroy (hideCircle);
 		SetIsHiding (false);
+	}
+
+	public bool Charge ()
+	{
+		if (hideLeft < hideTotal) {
+			hideLeft = Mathf.Clamp(hideLeft + hideTotal / 3, 0, hideTotal);
+			return true;
+		}
+		return false;
 	}
 
 }
