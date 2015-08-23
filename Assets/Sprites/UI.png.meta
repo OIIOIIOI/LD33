@@ -1,10 +1,13 @@
 fileFormatVersion: 2
 guid: 4f55ddf7f56043d49907212ea4067511
-timeCreated: 1440335672
+timeCreated: 1440345479
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
     21300000: UI_0
+    21300002: UI_1
+    21300004: UI_2
+    21300006: UI_3
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -53,12 +56,42 @@ TextureImporter:
     - name: UI_0
       rect:
         serializedVersion: 2
-        x: 1
-        y: 247
+        x: 0
+        y: 248
         width: 128
         height: 8
-      alignment: 0
-      pivot: {x: .5, y: .5}
+      alignment: 2
+      pivot: {x: .5, y: 1}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: UI_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 240
+        width: 128
+        height: 8
+      alignment: 2
+      pivot: {x: .5, y: 1}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: UI_2
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 242
+        width: 112
+        height: 14
+      alignment: 2
+      pivot: {x: .5, y: 1}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: UI_3
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 228
+        width: 112
+        height: 14
+      alignment: 2
+      pivot: {x: .5, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
   spritePackingTag: 
   userData: 

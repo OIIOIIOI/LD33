@@ -13,7 +13,11 @@ public class Entity : MonoBehaviour {
 	int moveTickDelay;
 	int moveTick;
 
-	int hidePower;
+	int hideTotal;
+	int hideLeft;
+
+	int humanityTotal;
+	int humanityLeft;
 
 	bool isWolf;
 	bool isAI;
@@ -35,6 +39,9 @@ public class Entity : MonoBehaviour {
 		playerNum = 1;
 		playerModel = playerNum + 10;
 
+		hideTotal = 300;
+		humanityLeft = humanityTotal = 2000;
+
 		AIModel = Random.Range (0, 2);
 
 		SetIsAI (true, true);
@@ -46,21 +53,31 @@ public class Entity : MonoBehaviour {
 	void FixedUpdate ()
 	{
 		// Check if activating base
-		if (!isWolf)
-		{
-			if (isAI)	isHiding = PreyHide();
-			else		isHiding = PlayerHide();
+		if (!isWolf) {
+			if (isAI)
+				isHiding = PreyHide ();
+			else
+				isHiding = PlayerHide ();
 
-			if (isHiding)
-			{
-				//Debug.Log("show base " + basePower);
-				//TODO invincible is the minimum base, show base and consume no power
-				//basePower--;
-				if (hidePower <= 0)	HideCircle();
-				else				ShowCircle();
+			if (isHiding) {
+				hideLeft--;
+				if (hideLeft <= 0)
+					HideCircle ();
+				else
+					ShowCircle ();
+			} else {
+				HideCircle ();
 			}
-			else HideCircle();
+		} else if (!isAI) {
+			humanityLeft--;
+
+			Main.instance.SetWolfBar(1f - ((float)humanityLeft / (float)humanityTotal));
+
+			if (humanityLeft == 0)
+				Debug.Log("GAME OVER");
 		}
+
+		Main.instance.SetHideBar ((float)hideLeft / (float)hideTotal);
 
 		// Check if time to move and get Vector2
 		Vector2 mov = Vector2.zero;
@@ -121,8 +138,12 @@ public class Entity : MonoBehaviour {
 	{
 		Vector2 mov = Vector2.zero;
 
-		if (Main.instance.GetWolf () != null)
-			mov = Evade (Main.instance.GetWolf ());
+		GameObject wolf = Main.instance.GetWolf ();
+		if (wolf != null)
+		{
+			if (Vector2.Distance(wolf.transform.position, transform.position) < 5f)
+				mov = Evade (wolf);
+		}
 
 		mov.Normalize ();
 		return mov;
@@ -210,9 +231,7 @@ public class Entity : MonoBehaviour {
 
 	void OnCollisionEnter2D (Collision2D coll)
 	{
-		if (!isWolf)	return;
-
-		if (coll.collider.tag == "Prey")
+		if (isWolf && coll.collider.tag == "Prey")
 		{
 			Entity ent = coll.collider.gameObject.GetComponent<Entity>();
 			//Debug.Log ("wolf (" + gameObject.name + ", " + isInvincible + ") collided with prey (" + coll.collider.gameObject.name + ", " + ent.IsInvincible() + ")");
@@ -265,7 +284,7 @@ public class Entity : MonoBehaviour {
 			// Change tag
 			gameObject.tag = "Wolf";
 			// Set base power
-			hidePower = 0;
+			hideLeft = 0;
 			// Set Wolf in Main
 			Main.instance.SetWolf(gameObject);
 		}
@@ -274,7 +293,7 @@ public class Entity : MonoBehaviour {
 			// Change tag
 			gameObject.tag = "Prey";
 			// Set base power
-			hidePower = 35;
+			hideLeft = hideTotal / 3;
 		}
 
 		AdjustParams ();

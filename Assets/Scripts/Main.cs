@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
+//using UnityStandardAssets.ImageEffects;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -8,10 +10,13 @@ public class Main : MonoBehaviour {
 
 	public GameObject entityPrefab;
 	public GameObject obstaclePrefab;
+	public GameObject wallPrefab;
 
 	List<GameObject> players;
 
 	GameObject wolf;
+	Image wolfBar;
+	Image hideBar;
 
 	void Awake()
 	{
@@ -22,6 +27,8 @@ public class Main : MonoBehaviour {
 
 	void Start ()
 	{
+		CreateWalls ();
+
 		players = new List<GameObject> ();
 
 		/*for (int i = 1; i < Input.GetJoystickNames().Length; i++) {
@@ -57,6 +64,37 @@ public class Main : MonoBehaviour {
 		ent.SetIsWolf (true);
 
 		Camera.main.GetComponent<FollowCam> ().targets = players;
+
+		wolfBar = GameObject.Find ("BarFill").GetComponent<Image>();
+		hideBar = GameObject.Find ("HideBarFill").GetComponent<Image>();
+	}
+
+	void CreateWalls ()
+	{
+		GameObject level = GameObject.Find ("Level");
+		GameObject wall;
+		for (int x = 0; x < 12; x++)
+		{
+			wall = Instantiate (wallPrefab, new Vector2(x, -8f), Quaternion.identity) as GameObject;
+			wall.transform.SetParent(level.transform);
+			wall = Instantiate (wallPrefab, new Vector2(-x, -8f), Quaternion.identity) as GameObject;
+			wall.transform.SetParent(level.transform);
+			wall = Instantiate (wallPrefab, new Vector2(x, 8f), Quaternion.identity) as GameObject;
+			wall.transform.SetParent(level.transform);
+			wall = Instantiate (wallPrefab, new Vector2(-x, 8f), Quaternion.identity) as GameObject;
+			wall.transform.SetParent(level.transform);
+		}
+		for (int y = 0; y < 8; y++)
+		{
+			wall = Instantiate (wallPrefab, new Vector2(-12, y), Quaternion.identity) as GameObject;
+			wall.transform.SetParent(level.transform);
+			wall = Instantiate (wallPrefab, new Vector2(-12, -y), Quaternion.identity) as GameObject;
+			wall.transform.SetParent(level.transform);
+			wall = Instantiate (wallPrefab, new Vector2(12, y), Quaternion.identity) as GameObject;
+			wall.transform.SetParent(level.transform);
+			wall = Instantiate (wallPrefab, new Vector2(12, -y), Quaternion.identity) as GameObject;
+			wall.transform.SetParent(level.transform);
+		}
 	}
 	
 	void Update ()
@@ -90,4 +128,16 @@ public class Main : MonoBehaviour {
 	}
 
 	public GameObject GetWolf () { return wolf; }
+	
+	public void SetWolfBar (float v)
+	{
+		v = Mathf.Clamp(v, 0f, 1f);
+		wolfBar.fillAmount = v;
+	}
+
+	public void SetHideBar (float v)
+	{
+		v = Mathf.Clamp(v, 0f, 1f);
+		hideBar.fillAmount = v;
+	}
 }
