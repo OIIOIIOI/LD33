@@ -7,6 +7,7 @@ public class Main : MonoBehaviour {
 	public static Main instance;
 
 	public GameObject entityPrefab;
+	public GameObject obstaclePrefab;
 
 	List<GameObject> players;
 
@@ -32,12 +33,20 @@ public class Main : MonoBehaviour {
 			players.Add (player);
 		}*/
 
-		for (int i = 0; i < 30; i++)
+		for (int i = 0; i < 10; i++)
 		{
 			Vector2 pos = Vector2.zero;
-			pos.x += Random.Range(-5f, 5f);
-			pos.y += Random.Range(-5f, 5f);
-			GameObject prey = Instantiate (entityPrefab, pos, Quaternion.identity) as GameObject;
+			pos.x += Random.Range(-10f, 10f);
+			pos.y += Random.Range(-7f, 7f);
+			Instantiate (entityPrefab, pos, Quaternion.identity);
+		}
+
+		for (int i = 0; i < 20; i++)
+		{
+			Vector2 pos = Vector2.zero;
+			pos.x += Random.Range(-10f, 10f);
+			pos.y += Random.Range(-7f, 7f);
+			Instantiate (obstaclePrefab, pos, Quaternion.identity);
 		}
 		
 		GameObject player = Instantiate (entityPrefab, new Vector2(-7f, 0f), Quaternion.identity) as GameObject;
@@ -53,6 +62,16 @@ public class Main : MonoBehaviour {
 	void Update ()
 	{
 		Time.timeScale = 1 - Input.GetAxis ("Fire");
+	}
+
+	void LateUpdate ()
+	{
+		SpriteRenderer[] srs = GameObject.FindObjectsOfType<SpriteRenderer> ();
+		foreach (SpriteRenderer sr in srs)
+		{
+			float y = sr.gameObject.transform.position.y;
+			sr.sortingOrder = -Mathf.FloorToInt(y * 1000);
+		}
 	}
 
 	public void SetWolf (GameObject go)

@@ -49,6 +49,7 @@
      <Compile Include="Assets\Scripts\Entity.cs" />
      <Compile Include="Assets\Scripts\FollowCam.cs" />
      <Compile Include="Assets\Scripts\Main.cs" />
+     <Compile Include="Assets\Scripts\RandomModel.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

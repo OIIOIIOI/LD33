@@ -4,6 +4,7 @@ using System.Collections;
 public class Entity : MonoBehaviour {
 
 	public GameObject haloPrefab;
+	public GameObject hidePrefab;
 
 	Rigidbody2D RB;
 	
@@ -12,11 +13,12 @@ public class Entity : MonoBehaviour {
 	int moveTickDelay;
 	int moveTick;
 
-	int basePower;
+	int hidePower;
 
 	bool isWolf;
 	bool isAI;
 	bool isInvincible;
+	bool isHiding;
 
 	int playerNum;
 
@@ -24,6 +26,7 @@ public class Entity : MonoBehaviour {
 	int playerModel;
 
 	GameObject halo;
+	GameObject hideCircle;
 
 	void Awake ()
 	{
@@ -37,6 +40,7 @@ public class Entity : MonoBehaviour {
 		SetIsAI (true, true);
 		SetIsWolf (false, true);
 		SetIsInvincible (false, true);
+		SetIsHiding (false, true);
 	}
 
 	void FixedUpdate ()
@@ -44,33 +48,38 @@ public class Entity : MonoBehaviour {
 		// Check if activating base
 		if (!isWolf)
 		{
-			bool activeBase = false;
-			if (isAI)	activeBase = PreyBase();
-			else		activeBase = PlayerBase();
+			if (isAI)	isHiding = PreyHide();
+			else		isHiding = PlayerHide();
 
-			if (activeBase)
+			if (isHiding)
 			{
+				//Debug.Log("show base " + basePower);
 				//TODO invincible is the minimum base, show base and consume no power
-				basePower--;
-				if (basePower <= 0)	HideBase();
-				else				ShowBase();
+				//basePower--;
+				if (hidePower <= 0)	HideCircle();
+				else				ShowCircle();
 			}
+			else HideCircle();
 		}
 
 		// Check if time to move and get Vector2
 		Vector2 mov = Vector2.zero;
-		moveTick--;
-		if (moveTick == 0)
+		// No movement if base active
+		if (!isHiding)
 		{
-			// Each of these return a normalized Vector2
-			if (isAI && isWolf)			mov = GetWolfMove();
-			else if (isAI && !isWolf)	mov = GetPreyMove();
-			else 						mov = GetPlayerMove();
-			// Apply speed
-			mov *= runSpeed;
-			// While not moving, keep ticking each frame
-			if (mov != Vector2.zero)	moveTick = moveTickDelay;
-			else						moveTick = 1;
+			moveTick--;
+			if (moveTick == 0)
+			{
+				// Each of these return a normalized Vector2
+				if (isAI && isWolf)			mov = GetWolfMove();
+				else if (isAI && !isWolf)	mov = GetPreyMove();
+				else 						mov = GetPlayerMove();
+				// Apply speed
+				mov *= runSpeed;
+				// While not moving, keep ticking each frame
+				if (mov != Vector2.zero)	moveTick = moveTickDelay;
+				else						moveTick = 1;
+			}
 		}
 
 		// Change velocity
@@ -100,9 +109,10 @@ public class Entity : MonoBehaviour {
 		return mov;
 	}
 	
-	bool PlayerBase ()
+	bool PlayerHide ()
 	{
-		return false;
+		return Input.GetButton ("HideP" + playerNum);
+		//return false;
 	}
 
 	// PREY
@@ -118,7 +128,7 @@ public class Entity : MonoBehaviour {
 		return mov;
 	}
 
-	bool PreyBase ()
+	bool PreyHide ()
 	{
 		return false;
 	}
@@ -152,7 +162,10 @@ public class Entity : MonoBehaviour {
 		foreach (GameObject p in preys)
 		{
 			Entity ent = p.GetComponent<Entity>();
-			if (ent.IsInvincible())	continue;
+			if (ent.IsInvincible() || ent.IsHiding()) {
+				currentIsHidden = true;
+				continue;
+			}
 			
 			// Get dir for raycast
 			Vector2 dir = p.transform.position - transform.position;
@@ -182,7 +195,7 @@ public class Entity : MonoBehaviour {
 				closestPrey = p;
 			}
 		}
-		// First time assign
+		// First time assign or currentPrey no more available
 		if (currentPrey == null || currentIsHidden) {
 			currentPrey = closestPrey;
 		}
@@ -203,7 +216,7 @@ public class Entity : MonoBehaviour {
 		{
 			Entity ent = coll.collider.gameObject.GetComponent<Entity>();
 			//Debug.Log ("wolf (" + gameObject.name + ", " + isInvincible + ") collided with prey (" + coll.collider.gameObject.name + ", " + ent.IsInvincible() + ")");
-			if (ent.IsInvincible())	return;
+			if (ent.IsInvincible() || ent.IsHiding())	return;
 			
 			// Wolf (this) becomes Prey
 			SetIsWolf(false);
@@ -220,18 +233,18 @@ public class Entity : MonoBehaviour {
 	{
 		if (isWolf) {
 			if (isAI) {
-				runSpeed = 8f;
-				moveTick = moveTickDelay = 15;
+				runSpeed = 0.8f;
+				moveTick = moveTickDelay = 1;
 			} else {
-				runSpeed = 8f;
-				moveTick = moveTickDelay = 10;
+				runSpeed = 0.8f;
+				moveTick = moveTickDelay = 1;
 			}
 		} else {
 			if (isAI) {
-				runSpeed = 0.6f;
+				runSpeed = 0.5f;
 				moveTick = moveTickDelay = 1;
 			} else {
-				runSpeed = 0.6f;
+				runSpeed = 0.7f;
 				moveTick = moveTickDelay = 1;
 			}
 		}
@@ -247,10 +260,12 @@ public class Entity : MonoBehaviour {
 
 		if (isWolf)
 		{
+			// Stop hiding (shouldn't happen)
+			SetIsHiding (false);
 			// Change tag
 			gameObject.tag = "Wolf";
 			// Set base power
-			basePower = 0;
+			hidePower = 0;
 			// Set Wolf in Main
 			Main.instance.SetWolf(gameObject);
 		}
@@ -259,7 +274,7 @@ public class Entity : MonoBehaviour {
 			// Change tag
 			gameObject.tag = "Prey";
 			// Set base power
-			basePower = 35;
+			hidePower = 35;
 		}
 
 		AdjustParams ();
@@ -302,6 +317,14 @@ public class Entity : MonoBehaviour {
 	}
 
 	public bool IsInvincible () { return isInvincible; }
+	
+	public void SetIsHiding (bool b, bool force = false)
+	{
+		if (!force && b == isHiding)	return;
+		isHiding = b;
+	}
+	
+	public bool IsHiding () { return isHiding; }
 
 	public void SetPlayerNum (int n)
 	{
@@ -341,14 +364,18 @@ public class Entity : MonoBehaviour {
 
 	// BASE
 	
-	void ShowBase ()
+	void ShowCircle ()
 	{
-		
+		if (hideCircle != null)	return;
+		hideCircle = Instantiate(hidePrefab) as GameObject;
+		hideCircle.transform.SetParent(transform, false);
+		SetIsHiding (true);
 	}
 
-	void HideBase ()
+	void HideCircle ()
 	{
-
+		if (hideCircle != null)	Destroy (hideCircle);
+		SetIsHiding (false);
 	}
 
 }
