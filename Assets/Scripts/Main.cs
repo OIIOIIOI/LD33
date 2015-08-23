@@ -23,13 +23,6 @@ public class Main : MonoBehaviour {
 	{
 		players = new List<GameObject> ();
 
-		GameObject player = Instantiate (entityPrefab, new Vector2(0f, 0f), Quaternion.identity) as GameObject;
-		player.name = "Player1";
-		Entity ent = player.GetComponent<Entity> ();
-		ent.SetIsAI (false);
-		ent.SetIsWolf (true);
-		players.Add (player);
-
 		/*for (int i = 1; i < Input.GetJoystickNames().Length; i++) {
 			player = Instantiate (entityPrefab, new Vector2 (0f, 0f), Quaternion.identity) as GameObject;
 			player.name = "Player" + (i + 1);
@@ -46,6 +39,13 @@ public class Main : MonoBehaviour {
 			pos.y += Random.Range(-5f, 5f);
 			GameObject prey = Instantiate (entityPrefab, pos, Quaternion.identity) as GameObject;
 		}
+		
+		GameObject player = Instantiate (entityPrefab, new Vector2(-7f, 0f), Quaternion.identity) as GameObject;
+		player.name = "Player1";
+		players.Add (player);
+		Entity ent = player.GetComponent<Entity> ();
+		ent.SetIsAI (false);
+		ent.SetIsWolf (true);
 
 		Camera.main.GetComponent<FollowCam> ().targets = players;
 	}

@@ -2,10 +2,7 @@
 using System.Collections;
 
 public class Entity : MonoBehaviour {
-	
-	public Sprite wolfSprite;
-	public Sprite preySprite;
-	public RuntimeAnimatorController preyAC;
+
 	public GameObject haloPrefab;
 
 	Rigidbody2D RB;
@@ -23,7 +20,8 @@ public class Entity : MonoBehaviour {
 
 	int playerNum;
 
-	int animModel;
+	int AIModel;
+	int playerModel;
 
 	GameObject halo;
 
@@ -32,9 +30,9 @@ public class Entity : MonoBehaviour {
 		RB = gameObject.GetComponent<Rigidbody2D>();
 
 		playerNum = 1;
-		animModel = Random.Range (0, 2);
-		Animator anim = gameObject.GetComponent<Animator>();
-		anim.SetInteger ("model", animModel);
+		playerModel = playerNum + 10;
+
+		AIModel = Random.Range (0, 2);
 
 		SetIsAI (true, true);
 		SetIsWolf (false, true);
@@ -79,7 +77,12 @@ public class Entity : MonoBehaviour {
 		Vector2 vel = RB.velocity + mov;
 		vel *= 0.9f;
 		RB.velocity = vel;
-		// Adjust orientation
+
+		// Flip
+		if (RB.velocity.x > 0)		transform.localScale = new Vector3 (-1f, 1f, 1f);
+		else if (RB.velocity.x < 0)	transform.localScale = new Vector3 (1f, 1f, 1f);
+
+		// Adjust rotation
 		//float angle = Mathf.Atan2(RB.velocity.y, RB.velocity.x) * Mathf.Rad2Deg;
 		//transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 	}
@@ -241,7 +244,6 @@ public class Entity : MonoBehaviour {
 
 		Animator anim = gameObject.GetComponent<Animator>();
 		anim.SetBool ("entityIsWolf", isWolf);
-		//SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer> ();
 
 		if (isWolf)
 		{
@@ -270,6 +272,11 @@ public class Entity : MonoBehaviour {
 		if (!force && b == isAI)	return;
 		isAI = b;
 
+		// Change model
+		Animator anim = gameObject.GetComponent<Animator>();
+		if (isAI)	anim.SetInteger ("model", AIModel);
+		else		anim.SetInteger ("model", playerModel);
+
 		AdjustParams ();
 	}
 
@@ -296,7 +303,11 @@ public class Entity : MonoBehaviour {
 
 	public bool IsInvincible () { return isInvincible; }
 
-	public void SetPlayerNum (int n) { playerNum = n; }
+	public void SetPlayerNum (int n)
+	{
+		playerNum = n;
+		playerModel = playerNum + 10;
+	}
 	public int GetPlayerNum () { return playerNum; }
 
 	// STEERING BEHAVIOURS
