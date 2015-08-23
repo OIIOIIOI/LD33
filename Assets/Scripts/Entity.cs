@@ -5,6 +5,7 @@ public class Entity : MonoBehaviour {
 	
 	public Sprite wolfSprite;
 	public Sprite preySprite;
+	public RuntimeAnimatorController preyAC;
 	public GameObject haloPrefab;
 
 	Rigidbody2D RB;
@@ -22,17 +23,22 @@ public class Entity : MonoBehaviour {
 
 	int playerNum;
 
+	int animModel;
+
 	GameObject halo;
 
 	void Awake ()
 	{
 		RB = gameObject.GetComponent<Rigidbody2D>();
-		
+
+		playerNum = 1;
+		animModel = Random.Range (0, 2);
+		Animator anim = gameObject.GetComponent<Animator>();
+		anim.SetInteger ("model", animModel);
+
 		SetIsAI (true, true);
 		SetIsWolf (false, true);
 		SetIsInvincible (false, true);
-
-		playerNum = 1;
 	}
 
 	void FixedUpdate ()
@@ -74,8 +80,8 @@ public class Entity : MonoBehaviour {
 		vel *= 0.9f;
 		RB.velocity = vel;
 		// Adjust orientation
-		float angle = Mathf.Atan2(RB.velocity.y, RB.velocity.x) * Mathf.Rad2Deg;
-		transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+		//float angle = Mathf.Atan2(RB.velocity.y, RB.velocity.x) * Mathf.Rad2Deg;
+		//transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 	}
 
 	// PLAYER
@@ -143,7 +149,7 @@ public class Entity : MonoBehaviour {
 		foreach (GameObject p in preys)
 		{
 			Entity ent = p.GetComponent<Entity>();
-			if (ent.isInvincible)	continue;
+			if (ent.IsInvincible())	continue;
 			
 			// Get dir for raycast
 			Vector2 dir = p.transform.position - transform.position;
@@ -233,10 +239,13 @@ public class Entity : MonoBehaviour {
 		if (!force && b == isWolf)	return;
 		isWolf = b;
 
+		Animator anim = gameObject.GetComponent<Animator>();
+		anim.SetBool ("entityIsWolf", isWolf);
+		//SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer> ();
+
 		if (isWolf)
 		{
-			// Change sprite and tag
-			gameObject.GetComponent<SpriteRenderer>().sprite = wolfSprite;
+			// Change tag
 			gameObject.tag = "Wolf";
 			// Set base power
 			basePower = 0;
@@ -245,8 +254,7 @@ public class Entity : MonoBehaviour {
 		}
 		else
 		{
-			// Change sprite and tag
-			gameObject.GetComponent<SpriteRenderer>().sprite = preySprite;
+			// Change tag
 			gameObject.tag = "Prey";
 			// Set base power
 			basePower = 35;

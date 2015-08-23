@@ -30,25 +30,22 @@ public class Main : MonoBehaviour {
 		ent.SetIsWolf (true);
 		players.Add (player);
 
-		for (int i = 1; i < Input.GetJoystickNames().Length; i++) {
+		/*for (int i = 1; i < Input.GetJoystickNames().Length; i++) {
 			player = Instantiate (entityPrefab, new Vector2 (0f, 0f), Quaternion.identity) as GameObject;
 			player.name = "Player" + (i + 1);
 			ent = player.GetComponent<Entity> ();
 			ent.SetIsAI (false);
 			ent.SetPlayerNum (i + 1);
 			players.Add (player);
-		}
+		}*/
 
-		GameObject prey = Instantiate (entityPrefab, new Vector2(3f, 0f), Quaternion.identity) as GameObject;
-		prey.name = "Jimmy";
-		prey = Instantiate (entityPrefab, new Vector2(-3f, 0f), Quaternion.identity) as GameObject;
-		prey.name = "Theo";
-		prey = Instantiate (entityPrefab, new Vector2(0f, 3f), Quaternion.identity) as GameObject;
-		prey.name = "Juliet";
-		prey = Instantiate (entityPrefab, new Vector2(0f, -3f), Quaternion.identity) as GameObject;
-		prey.name = "Dorothy";
-		//Entity ent = prey.GetComponent<Entity> ();
-		//ent.SetIsWolf (true);
+		for (int i = 0; i < 30; i++)
+		{
+			Vector2 pos = Vector2.zero;
+			pos.x += Random.Range(-5f, 5f);
+			pos.y += Random.Range(-5f, 5f);
+			GameObject prey = Instantiate (entityPrefab, pos, Quaternion.identity) as GameObject;
+		}
 
 		Camera.main.GetComponent<FollowCam> ().targets = players;
 	}
@@ -61,6 +58,16 @@ public class Main : MonoBehaviour {
 	public void SetWolf (GameObject go)
 	{
 		wolf = go;
+
+		Entity ent = go.GetComponent<Entity> ();
+
+		// Tell every Prey entity whether or not the new Wolf is a player
+		GameObject[] preys = GameObject.FindGameObjectsWithTag ("Prey");
+		foreach (GameObject p in preys)
+		{
+			Animator anim = p.GetComponent<Animator>();
+			anim.SetBool("playerIsWolf", !ent.IsAI());
+		}
 	}
 
 	public GameObject GetWolf () { return wolf; }
