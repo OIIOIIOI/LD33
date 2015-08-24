@@ -11,6 +11,7 @@ public class Main : MonoBehaviour {
 	public GameObject entityPrefab;
 	public GameObject obstaclePrefab;
 	public GameObject wallPrefab;
+	public GameObject scoreTickPrefab;
 
 	List<GameObject> players;
 
@@ -18,11 +19,32 @@ public class Main : MonoBehaviour {
 	Image wolfBar;
 	Image hideBar;
 
+	int scoreTickDelay;
+	int scoreTick;
+	float bestDist;
+
+	int playerScore;
+	Text scoreTF;
+
+	GameObject endPanel;
+	Image blackOverlay;
+
+	[HideInInspector]
+	public bool canPlay;
+
+	bool canPress;
+
 	void Awake()
 	{
 		if (instance != null)
 			throw new UnityException ("Main is already instanciated");
 		instance = this;
+
+		endPanel = GameObject.Find ("EndPanel");
+		endPanel.SetActive (false);
+
+		canPlay = false;
+		canPress = false;
 	}
 
 	void Start ()
@@ -31,32 +53,15 @@ public class Main : MonoBehaviour {
 
 		players = new List<GameObject> ();
 
-		/*for (int i = 1; i < Input.GetJoystickNames().Length; i++) {
-			player = Instantiate (entityPrefab, new Vector2 (0f, 0f), Quaternion.identity) as GameObject;
-			player.name = "Player" + (i + 1);
-			ent = player.GetComponent<Entity> ();
-			ent.SetIsAI (false);
-			ent.SetPlayerNum (i + 1);
-			players.Add (player);
-		}*/
-
 		for (int i = 0; i < 10; i++)
 		{
 			Vector2 pos = Vector2.zero;
-			pos.x += Random.Range(-5f, 5f);
-			pos.y += Random.Range(-5f, 5f);
+			pos.x += Random.Range(-4f, 4f);
+			pos.y += Random.Range(-4f, 4f);
 			Instantiate (entityPrefab, pos, Quaternion.identity);
 		}
 
-		/*for (int i = 0; i < 20; i++)
-		{
-			Vector2 pos = Vector2.zero;
-			pos.x += Random.Range(-10f, 10f);
-			pos.y += Random.Range(-7f, 7f);
-			Instantiate (obstaclePrefab, pos, Quaternion.identity);
-		}*/
-		
-		GameObject player = Instantiate (entityPrefab, new Vector2(-7f, 0f), Quaternion.identity) as GameObject;
+		GameObject player = Instantiate (entityPrefab) as GameObject;
 		player.name = "Player1";
 		players.Add (player);
 		Entity ent = player.GetComponent<Entity> ();
@@ -67,43 +72,92 @@ public class Main : MonoBehaviour {
 
 		wolfBar = GameObject.Find ("BarFill").GetComponent<Image>();
 		hideBar = GameObject.Find ("HideBarFill").GetComponent<Image>();
+
+		scoreTick = scoreTickDelay = 45;
+		bestDist = float.MaxValue;
+
+		playerScore = 0;
+		scoreTF = GameObject.Find ("ScoreTF").GetComponent<Text> ();
+
+		blackOverlay = GameObject.Find("BlackOverlay").GetComponent<Image>();
+		blackOverlay.color = Color.black;
+		
+		StartCoroutine(FadeFromBlack());
+	}
+	
+	IEnumerator FadeFromBlack()
+	{
+		while (blackOverlay.color.a > 0)
+		{
+			blackOverlay.color = new Color(0f, 0f, 0f, blackOverlay.color.a - 0.025f);
+			yield return new WaitForFixedUpdate();
+		}
+		canPlay = true;
 	}
 
-	/*void CreateWalls ()
-	{
-		GameObject level = GameObject.Find ("Level");
-		GameObject wall;
-		for (int x = 0; x < 8; x++)
-		{
-			wall = Instantiate (wallPrefab, new Vector2(x, -6f), Quaternion.identity) as GameObject;
-			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(-x, -6f), Quaternion.identity) as GameObject;
-			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(x, 6f), Quaternion.identity) as GameObject;
-			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(-x, 6f), Quaternion.identity) as GameObject;
-			wall.transform.SetParent(level.transform);
-		}
-		for (int y = 0; y < 6; y++)
-		{
-			wall = Instantiate (wallPrefab, new Vector2(-8, y), Quaternion.identity) as GameObject;
-			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(-8, -y), Quaternion.identity) as GameObject;
-			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(8, y), Quaternion.identity) as GameObject;
-			wall.transform.SetParent(level.transform);
-			wall = Instantiate (wallPrefab, new Vector2(8, -y), Quaternion.identity) as GameObject;
-			wall.transform.SetParent(level.transform);
-		}
-	}*/
-	
 	void Update ()
 	{
 		//Time.timeScale = 1 - Input.GetAxis ("Fire");
+		
+		if (Input.GetButtonDown("Start") && canPress) {
+			canPress = false;
+
+			blackOverlay.color = Color.clear;
+			StartCoroutine(FadeToBlack());
+		}
+	}
+
+	void FixedUpdate ()
+	{
+		if (!canPlay)	return;
+
+		// Checks
+		if (players.Count == 0 || wolf == null)
+			return;
+		
+		Entity ent = players [0].GetComponent<Entity> ();
+		if (ent.IsWolf () || ent.IsInvincible())
+			return;
+
+		// Store dist
+
+		float dist = Vector2.Distance (wolf.transform.position, ent.transform.position);
+		//Debug.Log (dist + " / " + bestDist);
+		if (dist < bestDist) {
+			bestDist = dist;
+			//Debug.Log("better");
+		}
+
+		// Score tick
+		scoreTick--;
+
+		if (scoreTick <= 0)
+		{
+			int score = 1;
+			if (bestDist < 1.5f)		score = 3;
+			else if (bestDist < 5f)	score = 2;
+
+			GameObject go = Instantiate (scoreTickPrefab) as GameObject;
+			go.transform.SetParent(players[0].transform, false);
+			go.transform.localScale = players[0].transform.localScale;
+			ScoreTick st = go.GetComponent<ScoreTick>();
+			st.Setup (score, players[0]);
+
+			if (score == 1)			playerScore += 1;
+			else if (score == 2)	playerScore += 5;
+			else if (score == 3)	playerScore += 25;
+
+			if (scoreTF != null)	scoreTF.text = "Score: " + playerScore;
+
+			scoreTick = scoreTickDelay;
+			bestDist = float.MaxValue;
+		}
 	}
 
 	void LateUpdate ()
 	{
+		if (!canPlay)	return;
+
 		SpriteRenderer[] srs = GameObject.FindObjectsOfType<SpriteRenderer> ();
 		foreach (SpriteRenderer sr in srs)
 		{
@@ -116,15 +170,17 @@ public class Main : MonoBehaviour {
 	{
 		wolf = go;
 
-		Entity ent = go.GetComponent<Entity> ();
+		if (players.Count > 0 && go == players[0])	bestDist = float.MaxValue;
+
+		//Entity ent = go.GetComponent<Entity> ();
 
 		// Tell every Prey entity whether or not the new Wolf is a player
-		GameObject[] preys = GameObject.FindGameObjectsWithTag ("Prey");
+		/*GameObject[] preys = GameObject.FindGameObjectsWithTag ("Prey");
 		foreach (GameObject p in preys)
 		{
 			Animator anim = p.GetComponent<Animator>();
 			anim.SetBool("playerIsWolf", !ent.IsAI());
-		}
+		}*/
 	}
 
 	public GameObject GetWolf () { return wolf; }
@@ -140,4 +196,35 @@ public class Main : MonoBehaviour {
 		v = Mathf.Clamp(v, 0f, 1f);
 		hideBar.fillAmount = v;
 	}
+
+	public void GameOver()
+	{
+		canPlay = false;
+
+		foreach (Rigidbody2D rb in GameObject.FindObjectsOfType<Rigidbody2D> ()) {
+			rb.velocity = Vector2.zero;
+		}
+
+		endPanel.SetActive (true);
+		Text finalScoreTF = GameObject.Find ("FinalScoreTF").GetComponent<Text> ();
+		if (finalScoreTF != null)	finalScoreTF.text = "Your final score: " + playerScore;
+
+		canPress = true;
+	}
+	
+	IEnumerator FadeToBlack()
+	{
+		while (blackOverlay.color.a < 1)
+		{
+			blackOverlay.color = new Color(0f, 0f, 0f, blackOverlay.color.a + 0.025f);
+			yield return new WaitForFixedUpdate();
+		}
+		Invoke("BackToMenu", 0.5f);
+	}
+	
+	void BackToMenu()
+	{
+		Application.LoadLevel("Splash");
+	}
+
 }

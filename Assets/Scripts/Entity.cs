@@ -39,8 +39,8 @@ public class Entity : MonoBehaviour {
 		playerNum = 1;
 		playerModel = playerNum + 10;
 
-		hideTotal = 60;
-		humanityLeft = humanityTotal = 2000;
+		hideTotal = 72;
+		humanityLeft = humanityTotal = 1500;
 
 		AIModel = Random.Range (0, 2);
 
@@ -52,6 +52,8 @@ public class Entity : MonoBehaviour {
 
 	void FixedUpdate ()
 	{
+		if (!Main.instance.canPlay)	return;
+
 		// Check if activating base
 		if (!isWolf) {
 			if (isAI)
@@ -76,7 +78,7 @@ public class Entity : MonoBehaviour {
 			Main.instance.SetWolfBar(1f - ((float)humanityLeft / (float)humanityTotal));
 
 			if (humanityLeft == 0)
-				Debug.Log("GAME OVER");
+				Main.instance.GameOver();
 		}
 
 		Main.instance.SetHideBar ((float)hideLeft / (float)hideTotal);
@@ -130,6 +132,7 @@ public class Entity : MonoBehaviour {
 	
 	bool PlayerHide ()
 	{
+		if (isInvincible)	return false;
 		return (Input.GetButton ("HideP" + playerNum) && hideLeft > 0);
 		//return false;
 	}
@@ -217,6 +220,8 @@ public class Entity : MonoBehaviour {
 
 	void OnTriggerEnter2D (Collider2D coll)
 	{
+		if (!Main.instance.canPlay)	return;
+
 		if (!isAI || coll.tag != "Waypoint")	return;
 
 		if (currentWaypoint != null && coll.gameObject == currentWaypoint) {
@@ -308,6 +313,8 @@ public class Entity : MonoBehaviour {
 
 	void OnCollisionEnter2D (Collision2D coll)
 	{
+		if (!Main.instance.canPlay)	return;
+
 		if (isWolf && coll.collider.tag == "Prey")
 		{
 			Entity ent = coll.collider.gameObject.GetComponent<Entity>();
@@ -337,7 +344,7 @@ public class Entity : MonoBehaviour {
 			}
 		} else {
 			if (isAI) {
-				runSpeed = 0.45f;
+				runSpeed = 0.4f;
 				moveTick = moveTickDelay = 1;
 			} else {
 				runSpeed = 0.55f;

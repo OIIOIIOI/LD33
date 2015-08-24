@@ -20,7 +20,7 @@ public class ChargePoint : MonoBehaviour {
 			bool used = ent.Charge();
 			if (used) {
 				anim.SetBool("isCharged", false);
-				Invoke("ResetCharge", 10f);
+				Invoke("ResetCharge", 9f);
 			}
 		}
 	}
